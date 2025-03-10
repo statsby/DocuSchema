@@ -11,9 +11,6 @@ from config.config import DBMS, SCHEMA_NAME
 from src.generate_dd import generate_data_dictionary
 
 
-
-
-
 def get_table_names(schema_name):
     """
     Fetches the names of all tables within a given database schema.

@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "data-dict-ai"
+version = "0.1.0"
+description = "This project automates the generation of a data dictionary for a specified database schema. It fetches metadata from the database, enhances it with AI-generated descriptions, and outputs the structured data into an Excel file."
+authors = ["Statsby Solutions <your.email@example.com>"]
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4.0"
+loguru = "0.7.3"
+openai = "1.65.2"
+openpyxl = "3.1.5"
+pandas = "2.2.3"
+psycopg2 = "2.9.10"
+XlsxWriter = "3.2.2"
+python-dotenv = "1.0.1"
+mysql-connector-python = "9.2.0"
+langchain = "^0.3.9"
+langchain_openai= "0.3.7"
+langchain-ollama = "^0.2.1"
+langchain-huggingface = "0.1.2"
+langchain_cohere = "0.4.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
