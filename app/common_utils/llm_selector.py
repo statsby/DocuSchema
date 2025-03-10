@@ -4,7 +4,7 @@ from langchain_ollama import ChatOllama
 from langchain_huggingface import ChatHuggingFace
 from langchain_cohere import ChatCohere
 from common_utils.loggers import logger
-from config.config import LLM_MODEL_NAME, API_KEY
+from config.config import Config
 
 class LLMSelector:
     """
@@ -26,7 +26,7 @@ class LLMSelector:
     """
 
     def __init__(self):
-        self.model_name = (LLM_MODEL_NAME or "").strip().lower()
+        self.model_name = (Config.LLM_MODEL_NAME or "").strip().lower()
         logger.info(f"LLMSelector initialized with model: '{self.model_name}'")
 
     def get_llm_model(self):
@@ -47,7 +47,7 @@ class LLMSelector:
             logger.info(f"Selecting LLM model: '{self.model_name}'")
 
             if "openai" in self.model_name:
-                if not API_KEY:
+                if not Config.API_KEY:
                     logger.error("OpenAI API key is missing. Update your .env file.")
                     raise ValueError("OpenAI API key is missing.")
 
@@ -57,7 +57,7 @@ class LLMSelector:
                     raise ValueError("OpenAI model name is missing. Specify a valid model (e.g., 'openai:gpt-4').")
 
                 logger.info(f"Initializing OpenAI model: '{model_id}'")
-                return ChatOpenAI(model=model_id, api_key=API_KEY, temperature=0.0)
+                return ChatOpenAI(model=model_id, api_key=Config.API_KEY, temperature=0.0)
 
             elif "ollama" in self.model_name:
                 model_id = self.model_name.replace("ollama:", "").strip()
@@ -69,7 +69,7 @@ class LLMSelector:
                 return ChatOllama(model=model_id)
 
             elif "huggingface" in self.model_name:
-                if not API_KEY:
+                if not Config.API_KEY:
                     logger.error("Hugging Face API key is missing. Update your .env file.")
                     raise ValueError("Hugging Face API key is missing.")
 
@@ -79,10 +79,10 @@ class LLMSelector:
                     raise ValueError("Hugging Face model name is missing.")
 
                 logger.info(f"Initializing Hugging Face model: '{model_id}'")
-                return ChatHuggingFace(repo_id=model_id, api_key=API_KEY, temperature=0.0)
+                return ChatHuggingFace(repo_id=model_id, api_key=Config.API_KEY, temperature=0.0)
 
             elif "cohere" in self.model_name:
-                if not API_KEY:
+                if not Config.API_KEY:
                     logger.error("Cohere API key is missing. Update your .env file.")
                     raise ValueError("Cohere API key is missing.")
 
@@ -92,7 +92,7 @@ class LLMSelector:
                     raise ValueError("Cohere model name is missing.")
 
                 logger.info(f"Initializing Cohere model: {model_id}")
-                return ChatCohere(model=model_id, api_key=API_KEY, temperature=0.0)
+                return ChatCohere(model=model_id, api_key=Config.API_KEY, temperature=0.0)
 
             else:
                 logger.error(f"Unsupported LLM model. Supported models: OpenAI, Ollama, Hugging Face, Cohere. Update .env with correct syntax (e.g., openai:gpt-4o).")
