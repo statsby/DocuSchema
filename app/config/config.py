@@ -19,3 +19,5 @@ MYSQL_DATABASE = os.getenv("MYSQL_DATABASE")
 DBMS = os.getenv("DBMS").lower()
 
 LLM_MODEL_NAME=os.getenv("LLM_MODEL_NAME")
+
+DOMAIN_NAME=os.getenv("DOMAIN_NAME")

@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from src.fetch_metadata import fetch_table_metadata
-from config.config import SCHEMA_NAME
+from config.config import SCHEMA_NAME, DOMAIN_NAME
 from common_utils.llm_selector import LLMSelector
 from common_utils.loggers import logger
 
@@ -24,19 +24,20 @@ def generate_column_description(metadata, model_name=None):
         None: If an error occurs during processing.
     """
     metadata_str = str(metadata)
+    domain_name= DOMAIN_NAME
 
     column_description_prompt = PromptTemplate(
-        input_variables=["metadata_str"],
+        input_variables=["metadata_str","domain_name"],
         template="""
         {metadata_str}
-        You are an expert database documenter. This is a clinical trials metadata.
+        You are an expert database documenter. This metadata belongs to {domain_name}.
         First value is table_name, column name, datatype, length, is null, default, 
         primary key, foreign key, constraints, description.
 
         Update this list and add a meaningful, descriptive description (<= 255 chars) 
         to each column. Make sure there is a proper description for each column.
         Note, if description already exists, do not update it.
-        Note - Do not add anything related to Clinical trial in column or table description.
+        Note - Do not add anything related to {domain_name} in column or table description.
         Return the output in the following sequence:
         table_name, column name, datatype, length, is null, default, primary key, 
         foreign key, constraints, description.
@@ -58,7 +59,7 @@ def generate_column_description(metadata, model_name=None):
 
         llm_chain = LLMChain(llm=llm, prompt=column_description_prompt)
 
-        response = llm_chain.run({"metadata_str": metadata_str})
+        response = llm_chain.run({"metadata_str": metadata_str, "domain_name": domain_name})
         return response.strip()
 
     except Exception as e:
