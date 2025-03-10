@@ -3,12 +3,10 @@ import os
 import pandas as pd
 import re
 from config.db_config import get_db_connection
-from config.config import DBMS, SCHEMA_NAME
+from config.config import Config
 from app.src.generate_data_dictionary import generate_data_dictionary
 from common_utils.loggers import logger
 from config.db_config import get_db_connection
-from config.config import DBMS, SCHEMA_NAME
-from app.src.generate_data_dictionary import generate_data_dictionary
 
 
 def get_table_names(schema_name):
@@ -65,9 +63,9 @@ def generate_data_dictionary_file(schema_name, table_names):
     Generates an Excel file containing the data dictionary for the specified schema.
     """
     try:
-        output_dir = os.path.join(os.getcwd(), "app", "output")
+        output_dir = os.path.join(os.getcwd(), "output")
         os.makedirs(output_dir, exist_ok=True)  # Ensure output directory exists
-        output_file = os.path.join(output_dir, f"{schema_name}_data_dictionary_({DBMS}).xlsx")
+        output_file = os.path.join(output_dir, f"{schema_name}_data_dictionary_({Config.DBMS}).xlsx")
 
         with pd.ExcelWriter(output_file, engine="xlsxwriter") as writer:
             for table in table_names:
@@ -144,7 +142,7 @@ if __name__ == "__main__":
     try:
         logger.info("Starting data dictionary generation process.")
         
-        schema_name = SCHEMA_NAME
+        schema_name = Config.SCHEMA_NAME
         table_names = get_table_names(schema_name)
 
         if not table_names:
