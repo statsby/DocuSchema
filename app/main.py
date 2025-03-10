@@ -8,7 +8,6 @@ from app.src.generate_data_dictionary import generate_data_dictionary
 from common_utils.loggers import logger
 from config.db_config import get_db_connection
 
-
 def get_table_names(schema_name):
     """
     Fetches the names of all tables within a given database schema.
