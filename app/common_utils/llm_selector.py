@@ -7,11 +7,9 @@ from langchain_cohere import ChatCohere
 from common_utils.loggers import logger
 from config.config import Config
 
-
 class ConfigurationError(Exception):
     """Custom exception for configuration errors in LLMSelector."""
     pass
-
 
 class LLMSelector:
     """
@@ -24,8 +22,6 @@ class LLMSelector:
         - "cohere:command-r" → Uses Cohere's Command-R+
     """
 
-    def __init__(self):
-        self.model_name = (Config.LLM_MODEL_NAME or "").strip().lower()
     def __init__(self) -> None:
         self.model_name: str = (Config.LLM_MODEL_NAME or "").strip().lower()
         logger.info(f"LLMSelector initialized with model: '{self.model_name}'")
@@ -45,6 +41,7 @@ class LLMSelector:
             raise ConfigurationError("LLM model name is missing. Update your .env file.")
 
         try:
+
             # Expecting format "provider:model_id"
             provider, model_id = self.model_name.split(":", 1)
             provider = provider.strip()

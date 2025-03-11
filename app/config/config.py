@@ -25,6 +25,6 @@ class Config:
 
     # LLM Configuration
     LLM_MODEL_NAME = os.getenv("LLM_MODEL_NAME")
-
+ 
     # Domain Name
     DOMAIN_NAME=os.getenv("DOMAIN_NAME","Clinical Trials")
