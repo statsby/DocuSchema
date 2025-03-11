@@ -2,10 +2,10 @@ import os
 from dotenv import load_dotenv
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
-from src.metadata_extractor import extract_table_metadata
-from config.config import SCHEMA_NAME, DOMAIN_NAME
-from common_utils.llm_selector import LLMSelector
-from common_utils.loggers import logger
+from app.src.metadata_extractor import extract_table_metadata
+from app.config.config import SCHEMA_NAME, DOMAIN_NAME
+from app.common_utils.llm_selector import LLMSelector
+from app.common_utils.loggers import logger
 
 load_dotenv()
 

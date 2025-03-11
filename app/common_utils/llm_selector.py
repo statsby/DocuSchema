@@ -4,8 +4,8 @@ from langchain_openai import ChatOpenAI
 from langchain_ollama import ChatOllama
 from langchain_huggingface import ChatHuggingFace
 from langchain_cohere import ChatCohere
-from common_utils.loggers import logger
-from config.config import Config
+from app.common_utils.loggers import logger
+from app.config.config import Config
 
 class ConfigurationError(Exception):
     """Custom exception for configuration errors in LLMSelector."""

@@ -2,11 +2,11 @@ import json
 import os
 import pandas as pd
 import re
-from config.db_config import get_db_connection
-from config.config import Config
+from app.config.db_config import get_db_connection
+from app.config.config import Config
 from app.src.generate_data_dictionary import generate_data_dictionary
-from common_utils.loggers import logger
-from config.db_config import get_db_connection
+from app.common_utils.loggers import logger
+from app.config.db_config import get_db_connection
 from typing import List
 
 def get_table_names(schema_name: str) -> List[str]:
