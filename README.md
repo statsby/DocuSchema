@@ -62,9 +62,10 @@ API_KEY=your_openai_api_key
 # Schema Name
 SCHEMA_NAME=your_schema
 ```
+**Important:** Replace all placeholder values (like `your_db`, `your_user`, etc.) with your actual credentials in the `.env` and `docker-compose.yml` files.
 
 ## Running with Docker Compose
-This project includes a `docker-compose.yml` file to set up MySQL and PostgreSQL containers.
+This project includes a `docker-compose.yml` file to set up MySQL and PostgreSQL containers. **(For local testing purposes)**
 
 ### 1. Start Database Containers
 ```sh

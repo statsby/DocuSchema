@@ -5,10 +5,10 @@ services:
     image: mysql:latest
     container_name: mysql_container
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: mydatabase
-      MYSQL_USER: nihal
-      MYSQL_PASSWORD: mypassword
+      MYSQL_ROOT_PASSWORD: your_root_password  # Replace with your actual root password
+      MYSQL_DATABASE: your_db  # Replace with your actual database name
+      MYSQL_USER: your_user  # Replace with your actual username
+      MYSQL_PASSWORD: your_password  # Replace with your actual password
     ports:
       - "3306:3306"
 
@@ -17,8 +17,8 @@ services:
     container_name: postgres_container
     restart: always
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: your_db  # Replace with your actual database name
+      POSTGRES_USER: your_user  # Replace with your actual username
+      POSTGRES_PASSWORD: your_password  # Replace with your actual password
     ports:
       - "5432:5432"
