@@ -7,8 +7,9 @@ from config.config import Config
 from app.src.generate_data_dictionary import generate_data_dictionary
 from common_utils.loggers import logger
 from config.db_config import get_db_connection
+from typing import List
 
-def get_table_names(schema_name):
+def get_table_names(schema_name: str) -> List[str]:
     """
     Fetches the names of all tables within a given database schema.
 
@@ -57,7 +58,7 @@ def get_table_names(schema_name):
             conn.close()
 
 
-def generate_data_dictionary_file(schema_name, table_names):
+def generate_data_dictionary_file(schema_name: str, table_names: List[str]) -> None:
     """
     Generates an Excel file containing the data dictionary for the specified schema.
     """
