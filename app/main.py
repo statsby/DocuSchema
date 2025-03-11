@@ -4,11 +4,9 @@ import pandas as pd
 import re
 from config.db_config import get_db_connection
 from config.config import Config
-from src.generate_dd import generate_data_dictionary
+from app.src.generate_data_dictionary import generate_data_dictionary
 from common_utils.loggers import logger
 from config.db_config import get_db_connection
-from src.generate_dd import generate_data_dictionary
-
 
 def get_table_names(schema_name):
     """
