@@ -6,7 +6,6 @@ from config.db_config import get_db_connection
 from config.config import Config
 from app.src.generate_data_dictionary import generate_data_dictionary
 from common_utils.loggers import logger
-from config.db_config import get_db_connection
 from typing import List
 
 def get_table_names(schema_name: str) -> List[str]:
@@ -61,6 +60,7 @@ def get_table_names(schema_name: str) -> List[str]:
 def generate_data_dictionary_file(schema_name: str, table_names: List[str]) -> None:
     """
     Generates an Excel file containing the data dictionary for the specified schema.
+    Processes each table individually, logging errors without stopping execution.
     """
     try:
         output_dir = os.path.join(os.getcwd(), "output")
@@ -69,17 +69,21 @@ def generate_data_dictionary_file(schema_name: str, table_names: List[str]) -> N
 
         with pd.ExcelWriter(output_file, engine="xlsxwriter") as writer:
             for table in table_names:
-                logger.info(f"Processing table: {table}...")
+                try:
+                    logger.info(f"Processing table: {table}...")
 
-                # Generate data dictionary using the LLM
-                result = generate_data_dictionary(table)
+                    # Generate data dictionary using the LLM
+                    result = generate_data_dictionary(schema_name, table)
 
-                if result:
-                    # Remove unwanted formatting like markdown json blocks
+                    if not result:
+                        logger.warning(f"No valid data dictionary found for table: {table}")
+                        continue
+
+                    # Clean result to remove any unwanted formatting
                     cleaned_result = re.sub(r'```json|```|"Raw Result: ', '', result).strip()
 
                     if not cleaned_result:
-                        logger.warning(f"No valid data dictionary found for table: {table}")
+                        logger.warning(f"No structured data for table: {table}")
                         continue
 
                     structured_data = json.loads(cleaned_result)
@@ -132,10 +136,15 @@ def generate_data_dictionary_file(schema_name: str, table_names: List[str]) -> N
                     table_description = structured_data.get('table_description', '')
                     worksheet.write(1, 0, f"Description: {table_description}")
 
+                except Exception as table_err:
+                    logger.error(f"Error processing table {table}: {table_err}", exc_info=True)
+                    continue  # Continue processing other tables even if one fails
+
         logger.info(f"Data dictionary saved to {output_file}")
 
     except Exception as err:
-        logger.exception(f"Failed to generate data dictionary: {err}")
+        logger.exception(f"Critical error in generating data dictionary: {err}")
+
 
 
 if __name__ == "__main__":

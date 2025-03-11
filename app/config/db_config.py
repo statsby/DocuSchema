@@ -1,10 +1,8 @@
 import os
-from dotenv import load_dotenv
 import psycopg2
 import mysql.connector
 from common_utils.loggers import logger
 from config.config import Config
-load_dotenv()
 
 def get_db_connection():
     """Returns a database connection based on the DBMS type (PostgreSQL or MySQL)."""

@@ -1,15 +1,10 @@
 import os
-from dotenv import load_dotenv
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from src.metadata_extractor import extract_table_metadata
-from config.config import SCHEMA_NAME, DOMAIN_NAME
+from config.config import Config
 from common_utils.llm_selector import LLMSelector
 from common_utils.loggers import logger
-
-load_dotenv()
-
-schema_name = SCHEMA_NAME
 
 def generate_column_description(metadata, model_name=None):
     """
@@ -24,7 +19,7 @@ def generate_column_description(metadata, model_name=None):
         None: If an error occurs during processing.
     """
     metadata_str = str(metadata)
-    domain_name= DOMAIN_NAME
+    domain_name= Config.DOMAIN_NAME
 
     column_description_prompt = PromptTemplate(
         input_variables=["metadata_str","domain_name"],
@@ -67,7 +62,7 @@ def generate_column_description(metadata, model_name=None):
         raise e
 
 
-def generate_data_dictionary(table_name, model_name=None):
+def generate_data_dictionary(schema_name, table_name, model_name=None):
     """
     Generates a data dictionary for a given table by fetching metadata and 
     adding meaningful descriptions to each column.
