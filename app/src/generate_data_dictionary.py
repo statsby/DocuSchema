@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
-from src.fetch_metadata import fetch_table_metadata
+from src.metadata_extractor import extract_table_metadata
 from config.config import SCHEMA_NAME, DOMAIN_NAME
 from common_utils.llm_selector import LLMSelector
 from common_utils.loggers import logger
@@ -80,7 +80,7 @@ def generate_data_dictionary(table_name, model_name=None):
         str: A JSON-formatted string containing the table metadata with updated descriptions.
         None: If no metadata is found or an error occurs.
     """
-    metadata = fetch_table_metadata(schema_name, table_name)
+    metadata = extract_table_metadata(schema_name, table_name)
 
     if not metadata:
         logger.warning(f"Warning: No metadata found for table {table_name}")
