@@ -64,7 +64,7 @@ def generate_data_dictionary_file(schema_name, table_names):
     """
     try:
         output_dir = os.path.join(os.getcwd(), "output")
-        os.makedirs(output_dir, exist_ok=True)  # Ensure output directory exists
+        os.makedirs(output_dir, exist_ok=True)
         output_file = os.path.join(output_dir, f"{schema_name}_data_dictionary_({Config.DBMS}).xlsx")
 
         with pd.ExcelWriter(output_file, engine="xlsxwriter") as writer:
