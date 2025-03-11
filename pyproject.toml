@@ -2,7 +2,10 @@
 name = "data-dict-ai"
 version = "0.1.0"
 description = "This project automates the generation of a data dictionary for a specified database schema. It fetches metadata from the database, enhances it with AI-generated descriptions, and outputs the structured data into an Excel file."
-authors = ["Statsby Solutions <your.email@example.com>"]
+authors = [
+    "Statsby Solutions",
+    "Nihal Choudhary <nihal.choudhary@statsby.ai>"
+    ]
 readme = "README.md"
 packages = [{include = "app"}]
 
