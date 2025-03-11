@@ -2,11 +2,12 @@ import os
 from config.db_config import get_db_connection
 from common_utils.loggers import logger
 from database.base_db import BaseDB
+from typing import List, Tuple, Any
 
 class MySQLDB(BaseDB):
     """Handles MySQL metadata fetching."""
     
-    def fetch_metadata(self, schema_name, table_name):
+    def fetch_metadata(self, schema_name: str, table_name: str) -> List[Tuple[Any, ...]]:
         conn = get_db_connection()
         cursor = conn.cursor()
 

@@ -1,10 +1,11 @@
 import os
 from database.postgres import PostgresDB
 from database.mysql import MySQLDB
+from config.config import Config
 
 def get_db_instance():
     """Returns an instance of the appropriate database class based on the DBMS."""
-    dbms = os.getenv("DBMS", "postgres").lower()
+    dbms = Config.DBMS
 
     if dbms == "postgres":
         return PostgresDB()

@@ -1,7 +1,8 @@
 from database.db_factory import get_db_instance
 from common_utils.loggers import logger
+from typing import List, Tuple, Any
 
-def extract_table_metadata(schema_name, table_name):
+def extract_table_metadata(schema_name: str, table_name: str) -> List[Tuple[Any, ...]]:
     """
     Fetches metadata dynamically using the appropriate DB class.
 
