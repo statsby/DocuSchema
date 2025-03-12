@@ -65,13 +65,12 @@ class LLMSelector:
         elif provider == "cohere":
             return self._initialize_cohere(model_id)
         else:
-            logger.error(
-                "Unsupported LLM model. Supported models: OpenAI, Ollama, Hugging Face, Cohere."
-            )
+            logger.error(f"Unsupported LLM model: '{self.model_name}'. Supported models: OpenAI, Ollama, Hugging Face, Cohere.")
             raise ConfigurationError(
-                "Unsupported LLM model. Supported models: OpenAI, Ollama, Hugging Face, Cohere. "
+                f"Unsupported LLM model: '{self.model_name}'. Supported models: OpenAI, Ollama, Hugging Face, Cohere. "
                 "Update .env with correct syntax (e.g., 'openai:gpt-4')."
             )
+
 
     def _initialize_openai(self, model_id: str) -> ChatOpenAI:
         if not Config.API_KEY:
