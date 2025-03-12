@@ -28,3 +28,8 @@ class Config:
  
     # Domain Name
     DOMAIN_NAME=os.getenv("DOMAIN_NAME","Clinical Trials")
+
+    # Data Dictionary Configuration for extra columns
+    ADD_EXTRA_COLUMNS = os.getenv("ADD_EXTRA_COLUMNS", "False").lower() == "true"
+    UPDATE_FREQUENCY = os.getenv("UPDATE_FREQUENCY", "Daily")
+    OWNER = os.getenv("OWNER", "Data Governance")
