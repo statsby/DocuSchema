@@ -1,48 +1,60 @@
+import json
 import os
-from langchain.chains import LLMChain
+from langchain.schema.runnable import RunnableLambda
 from langchain.prompts import PromptTemplate
 from src.metadata_extractor import extract_table_metadata
 from config.config import Config
 from common_utils.llm_selector import LLMSelector
 from common_utils.loggers import logger
 
-def generate_column_description(metadata, model_name=None):
+import json
+import os
+from langchain.schema.runnable import RunnableLambda
+from langchain.prompts import PromptTemplate
+from src.metadata_extractor import extract_table_metadata
+from config.config import Config
+from common_utils.llm_selector import LLMSelector
+from common_utils.loggers import logger
+
+def generate_column_description(metadata, table_name, model_name=None):
     """
-    Generates a meaningful column-level description for each column in the table metadata and also generates a table level description.
-
-    Args:
-        metadata (dict): The metadata of the table, including column names, data types, constraints, etc.
-        model_name (str, optional): The name of the LLM model to be used for description generation.
-
-    Returns:
-        str: A JSON-formatted string containing the updated table metadata with meaningful descriptions.
-        None: If an error occurs during processing.
+    Generates a meaningful column-level description for each column in the table metadata.
     """
     metadata_str = str(metadata)
-    domain_name= Config.DOMAIN_NAME
+    domain_name = Config.DOMAIN_NAME
 
     column_description_prompt = PromptTemplate(
-        input_variables=["metadata_str","domain_name"],
+        input_variables=["metadata_str", "domain_name", "table_name"],
         template="""
+        You are an expert database documenter. The database domain is {domain_name}.
+
+        Below is metadata for the table "{table_name}":
         {metadata_str}
-        You are an expert database documenter. This metadata belongs to {domain_name}.
+
         First value is table_name, column name, datatype, length, is null, default, 
         primary key, foreign key, constraints, description.
 
-        Update this list and add a meaningful, descriptive description (<= 255 chars) 
-        to each column. Make sure there is a proper description for each column.
-        Note, if description already exists, do not update it.
-        Note - Do not add anything related to {domain_name} in column or table description.
-        Return the output in the following sequence:
-        table_name, column name, datatype, length, is null, default, primary key, 
-        foreign key, constraints, description.
-        Also generate a table-level description.
+        Update this list and add a meaningful, descriptive description (≤ 255 chars) 
+        to each column. Do not modify existing descriptions.
 
-        Do not alter any other column except Description column.
-        **IMPORTANT:** If a column name is "description", do not truncate output. 
-        Treat it like any other column.
-        For columns that have empty or none values, replace the value with NULL.
-        Strictly return the final response in JSON format without extra text.
+        Return the response as a **valid JSON object** with this structure:
+        {{
+            "table_name": "{table_name}",
+            "table_description": "<short_description>",
+            "columns": [
+                {{
+                    "column_name": "<column_name>",
+                    "datatype": "<datatype>",
+                    "length": <length>,
+                    "is_null": "<YES/NO>",
+                    "default": <default_value>,
+                    "primary_key": "<YES/NO>",
+                    "foreign_key": "<YES/NO>",
+                    "constraints": <constraints>,
+                    "description": "<detailed column description>"
+                }}
+            ]
+        }}
         """
     )
 
@@ -52,9 +64,19 @@ def generate_column_description(metadata, model_name=None):
 
         logger.info(f"Using LLM Model: {llm.__class__.__name__}")
 
-        llm_chain = LLMChain(llm=llm, prompt=column_description_prompt)
+        # ✅ Use new LangChain syntax (`RunnableLambda`)
+        chain = column_description_prompt | llm | RunnableLambda(lambda x: x.content if hasattr(x, "content") else str(x))
 
-        response = llm_chain.run({"metadata_str": metadata_str, "domain_name": domain_name})
+        # ✅ Fix: Ensure correct input keys are passed
+        response = chain.invoke({
+            "metadata_str": metadata_str,
+            "domain_name": domain_name,
+            "table_name": table_name
+        })
+
+        if hasattr(response, "content"):  # ✅ Extract content safely
+            response = response.content
+
         return response.strip()
 
     except Exception as e:
@@ -62,32 +84,34 @@ def generate_column_description(metadata, model_name=None):
         raise e
 
 
-def generate_data_dictionary(schema_name, table_name, model_name=None):
+def generate_data_dictionary(table_name, metadata, model_name=None):
     """
-    Generates a data dictionary for a given table by fetching metadata and 
-    adding meaningful descriptions to each column.
-
-    Args:
-        table_name (str): The name of the table for which the data dictionary is to be generated.
-        model_name (str, optional): The name of the LLM model to be used for description generation.
-
-    Returns:
-        str: A JSON-formatted string containing the table metadata with updated descriptions.
-        None: If no metadata is found or an error occurs.
+    Generates a data dictionary for a given table by fetching metadata and adding descriptions.
     """
-    metadata = extract_table_metadata(schema_name, table_name)
-
     if not metadata:
         logger.warning(f"Warning: No metadata found for table {table_name}")
         return None
 
     logger.info(f"Generating data dictionary for table: {table_name}")
 
-    llm_output = generate_column_description(metadata, model_name)
+    llm_output = generate_column_description(metadata, table_name, model_name)
 
-    if llm_output:
-        logger.info(f"Successfully generated data dictionary for {table_name}")
-    else:
-        logger.error(f"Failed to generate data dictionary for {table_name}")
+    if not llm_output or not llm_output.strip():
+        logger.error(f"LLM output is empty for table: {table_name}")
+        return None
 
-    return llm_output
+    # ✅ Clean LLM output and validate JSON
+    cleaned_output = llm_output.strip().strip("```json").strip("```")
+
+    try:
+        structured_data = json.loads(cleaned_output)
+
+        # ✅ Fix: If the response is a list, wrap it in a dictionary
+        if isinstance(structured_data, list):
+            structured_data = {"table_name": table_name, "columns": structured_data}
+
+        return json.dumps(structured_data)  # Return as JSON string
+
+    except json.JSONDecodeError:
+        logger.error(f"LLM output is not valid JSON for {table_name}: {cleaned_output}")
+        return None

@@ -6,10 +6,8 @@ from typing import List, Tuple, Any
 class PostgresDB(BaseDB):
     """Handles PostgreSQL metadata fetching."""
     
-    def fetch_metadata(self, schema_name: str, table_name: str) -> List[Tuple[Any, ...]]:
-        conn = None
+    def fetch_metadata(self,conn, schema_name: str) -> List[Tuple[Any, ...]]:
         try:
-            conn = get_db_connection()
             with conn.cursor() as cursor:  # Using `with` ensures the cursor closes properly
                 query = """
                 SELECT 
@@ -44,17 +42,18 @@ class PostgresDB(BaseDB):
                              WHERE nspname = c.table_schema
                           )
                 WHERE c.table_schema = %s
-                  AND c.table_name   = %s
                 ORDER BY c.ordinal_position;
                 """
 
-                cursor.execute(query, (schema_name, table_name))
+                # ✅ Corrected: Ensure schema_name is passed as a tuple
+                cursor.execute(query, (schema_name,))  
+
                 rows = cursor.fetchall()
 
             return rows  # Ensures results are returned even if conn closes in `finally`
 
         except Exception as err:
-            logger.error(f"Error fetching metadata for {table_name}: {err}", exc_info=True)
+            logger.error(f"Error fetching metadata for {schema_name}: {err}", exc_info=True)
             return []
 
         finally:

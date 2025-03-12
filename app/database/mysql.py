@@ -6,10 +6,9 @@ from typing import List, Tuple, Any
 class MySQLDB(BaseDB):
     """Handles MySQL metadata fetching."""
     
-    def fetch_metadata(self, schema_name: str, table_name: str) -> List[Tuple[Any, ...]]:
-        conn = None
+    def fetch_metadata(self,conn, schema_name: str) -> List[Tuple[Any, ...]]:
+        """Fetch metadata for all tables in the given schema."""
         try:
-            conn = get_db_connection()
             with conn.cursor() as cursor:  # Ensures cursor closes properly
                 query = """
                 SELECT 
@@ -37,17 +36,16 @@ class MySQLDB(BaseDB):
                        ON kcu.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
                       AND tc.TABLE_SCHEMA     = c.TABLE_SCHEMA
                 WHERE c.TABLE_SCHEMA = %s
-                  AND c.TABLE_NAME   = %s
-                ORDER BY c.ORDINAL_POSITION;
+                ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION;
                 """
 
-                cursor.execute(query, (schema_name, table_name))
+                cursor.execute(query, (schema_name,))
                 rows = cursor.fetchall()
 
             return rows  # Ensures results are returned even if conn closes in `finally`
 
         except Exception as err:
-            logger.error(f"Error fetching metadata for {table_name}: {err}", exc_info=True)
+            logger.error(f"Error fetching metadata for schema {schema_name}: {err}", exc_info=True)
             return []
 
         finally:

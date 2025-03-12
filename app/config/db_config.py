@@ -16,7 +16,7 @@ def get_db_connection():
         )
 
             if connection.is_connected():
-                print("Connected to MySQL")
+                logger.info("Connected to MySQL")
                 return connection
 
         elif Config.DBMS == "postgres" or Config.DBMS == "postgresql":
