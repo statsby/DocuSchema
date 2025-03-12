@@ -8,6 +8,7 @@ from app.src.generate_data_dictionary import generate_data_dictionary
 from app.common_utils.loggers import logger
 from typing import List
 
+
 def get_table_names(schema_name: str) -> List[str]:
     """
     Fetches the names of all tables within a given database schema.
@@ -24,18 +25,18 @@ def get_table_names(schema_name: str) -> List[str]:
                 FROM information_schema.schemata
                 WHERE schema_name = %s;
             """, (schema_name,))
-            
+
             if not cursor.fetchone():
                 logger.warning(f"Schema '{schema_name}' does not exist in the database.")
                 return []
-            
+
             cursor.execute("""
                 SELECT table_name
                 FROM information_schema.tables
                 WHERE table_schema = %s
                 AND table_type = 'BASE TABLE';
             """, (schema_name,))
-            
+
             table_names = [row[0] for row in cursor.fetchall()]
             logger.info(f"Table names fetched: {table_names}")
             return table_names
@@ -43,10 +44,11 @@ def get_table_names(schema_name: str) -> List[str]:
     except Exception as err:
         logger.exception(f"Error fetching table names: {err}")
         return []
-    
+
     finally:
         if conn:
             conn.close()
+
 
 def generate_data_dictionary_file(schema_name: str, table_names: List[str]) -> None:
     """
@@ -69,7 +71,7 @@ def generate_data_dictionary_file(schema_name: str, table_names: List[str]) -> N
 
                 if isinstance(result, str):  
                     cleaned_result = re.sub(r'```json|```|"Raw Result: ', '', result).strip()
-                    structured_data = json.loads(cleaned_result)  
+                    structured_data = json.loads(cleaned_result)
                 elif isinstance(result, dict):  
                     structured_data = result
                 else:  
@@ -103,18 +105,18 @@ def generate_data_dictionary_file(schema_name: str, table_names: List[str]) -> N
                 df.drop(columns=["table_name"], inplace=True, errors='ignore')
                 df["Valid Values/Constraints"] = df["Valid Values/Constraints"].fillna("")
 
+                # Define expected columns
                 expected_columns = [
-                    "Field Name", "Data Type", "Length", "Allow Null?", "Foreign Key?", 
+                    "Field Name", "Data Type", "Length", "Allow Null?", "Foreign Key?",
                     "Primary Key?", "Default", "Description", "Valid Values/Constraints"
                 ]
-                
-                if Config.ADD_EXTRA_COLUMNS:
-                    df["Update Frequency"] = Config.UPDATE_FREQUENCY
-                    df["Owner"] = Config.OWNER
-                    expected_columns.extend(["Update Frequency", "Owner"])
-                else:
-                    df = df[expected_columns]
-                
+
+                # Add extra columns dynamically
+                if Config.ADD_EXTRA_COLUMNS and Config.EXTRA_COLUMNS:
+                    for col_name, col_value in Config.EXTRA_COLUMNS.items():
+                        df[col_name] = col_value
+                    expected_columns.extend(Config.EXTRA_COLUMNS.keys())
+
                 df = df[expected_columns]
 
                 sheet_name = table[:31]
@@ -128,6 +130,7 @@ def generate_data_dictionary_file(schema_name: str, table_names: List[str]) -> N
 
     except Exception as err:
         logger.exception(f"Failed to generate data dictionary: {err}")
+
 
 if __name__ == "__main__":
     try:

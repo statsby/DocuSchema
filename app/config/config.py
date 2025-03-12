@@ -30,6 +30,13 @@ class Config:
     DOMAIN_NAME=os.getenv("DOMAIN_NAME","Clinical Trials")
 
     # Data Dictionary Configuration for extra columns
-    ADD_EXTRA_COLUMNS = os.getenv("ADD_EXTRA_COLUMNS", "False").lower() == "true"
-    UPDATE_FREQUENCY = os.getenv("UPDATE_FREQUENCY", "Daily")
-    OWNER = os.getenv("OWNER", "Data Governance")
+    ADD_EXTRA_COLUMNS = os.getenv("ADD_EXTRA_COLUMNS")
+    
+    # Read dynamic extra columns
+    EXTRA_COLUMNS = {}
+    extra_col_names = os.getenv("EXTRA_COLUMNS", "").split(",")
+    extra_col_values = os.getenv("EXTRA_COLUMN_VALUES", "").split(",")
+
+    # Ensure valid key-value pairs
+    if len(extra_col_names) == len(extra_col_values) and extra_col_names[0]:
+        EXTRA_COLUMNS = {col.strip(): val.strip() for col, val in zip(extra_col_names, extra_col_values)}
