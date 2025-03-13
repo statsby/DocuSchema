@@ -7,7 +7,6 @@ from app.config.config import Config
 from app.src.generate_data_dictionary import generate_data_dictionary
 from app.src.metadata_extractor import extract_table_metadata
 from app.common_utils.loggers import logger
-from typing import List
 
 
 def generate_data_dictionary_file(conn, schema_name: str) -> None:
@@ -112,8 +111,6 @@ if __name__ == "__main__":
             logger.error("Failed to establish database connection. Exiting.")
         else:
             generate_data_dictionary_file(conn, Config.SCHEMA_NAME)
-            conn.close()
 
     except Exception as e:
         logger.exception(f"Unexpected error: {e}")
-

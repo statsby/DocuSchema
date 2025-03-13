@@ -20,7 +20,7 @@ This tool uses AI services (such as OpenAI API) to generate meaningful column de
 - **Review your schema** before using this tool with an external LLM provider.
 - If privacy is a concern, consider using **local models** (e.g., Hugging Face, Ollama) instead of cloud-based APIs.
 
-### **🔹 Using a Local Model for Privacy**
+### ** Using a Local Model for Privacy**
 To avoid sending data to external servers, you can configure the tool to use a self-hosted LLM:
 1. Install **Ollama** or a compatible local LLM provider.
 2. Modify the `.env` file:
