@@ -1,4 +1,3 @@
-import os
 import json
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
@@ -67,7 +66,6 @@ def generate_column_description(metadata):
         llm_chain = LLMChain(llm=llm, prompt=COLUMN_DESCRIPTION_PROMPT, output_parser=json_parser)
 
         response = llm_chain.invoke({"metadata_json": metadata_json, "domain_name": DOMAIN_NAME})
-        logger.info(f"Raw LLM response: {response}")
 
         return response
 
@@ -79,7 +77,7 @@ def generate_column_description(metadata):
         raise e
 
 
-def generate_data_dictionary(table_name):
+def generate_data_dictionary(table_name, metadata):
     """
     Generates a data dictionary for a given table by fetching metadata and 
     adding meaningful descriptions.
@@ -90,8 +88,6 @@ def generate_data_dictionary(table_name):
     Returns:
         dict | None: JSON-formatted metadata with updated descriptions or None if unsuccessful.
     """
-    metadata = extract_table_metadata(SCHEMA_NAME, table_name)
-
     if not metadata:
         logger.warning(f"No metadata found for table: {table_name}")
         return None

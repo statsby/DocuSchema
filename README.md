@@ -10,6 +10,24 @@ This project automates the generation of a data dictionary for a specified datab
 - Outputs a well-structured Excel file containing the data dictionary.
 - Logs all processes for traceability.
 
+## **Data Privacy Notice**
+
+This tool uses AI services (such as OpenAI API) to generate meaningful column descriptions based on database metadata.  
+
+**Please note:**
+- When using OpenAI (or similar external APIs), **table schema and column names are sent to the API provider** for processing.
+- These names may contain **sensitive information**, such as project names or personal data fields.
+- **Review your schema** before using this tool with an external LLM provider.
+- If privacy is a concern, consider using **local models** (e.g., Hugging Face, Ollama) instead of cloud-based APIs.
+
+### ** Using a Local Model for Privacy**
+To avoid sending data to external servers, you can configure the tool to use a self-hosted LLM:
+1. Install **Ollama** or a compatible local LLM provider.
+2. Modify the `.env` file:
+   ```env
+   # Use a local AI model instead of OpenAI
+   LLM_PROVIDER=ollama
+
 ## Prerequisites
 Ensure you have the following installed:
 - Python 3.8+
@@ -95,15 +113,21 @@ An Excel file named `<SCHEMA_NAME>_data_dictionary_(DBMS).xlsx` will be created 
 │   │   ├── db_config.py    # Database connection setup
 │   ├── common_utils/
 │   │   ├── loggers.py      # Logging configuration
+│   ├── database/
+│   │   ├── base_db.py      # Abstract base class for databases
+│   │   ├── mysql.py        # MySQL database handler
+│   │   ├── postgres.py     # PostgreSQL database handler
+│   │   ├── db_factory.py   # Factory pattern for database instances
 │   ├── src/
-│   │   ├── fetch_metadata.py  # Fetches table metadata
-│   │   ├── generate_dd.py     # Generates data dictionary with OpenAI API
+│   │   ├── metadata_extractor.py  # Fetches table metadata
+│   │   ├── generate_data_dictionary.py  # Generates data dictionary with OpenAI API
 │   ├── main.py             # Main script to generate the data dictionary
 │
 ├── docker-compose.yml      # Docker Compose configuration for databases
 ├── .env                    # Environment configuration file
 ├── pyproject.toml          # List of required dependencies
 ├── README.md               # Project documentation
+
 ```
 
 ## Logging

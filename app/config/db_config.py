@@ -1,10 +1,8 @@
 import os
-from dotenv import load_dotenv
 import psycopg2
 import mysql.connector
 from app.common_utils.loggers import logger
 from app.config.config import Config
-load_dotenv()
 
 def get_db_connection():
     """Returns a database connection based on the DBMS type (PostgreSQL or MySQL)."""
@@ -18,7 +16,7 @@ def get_db_connection():
         )
 
             if connection.is_connected():
-                print("Connected to MySQL")
+                logger.info("Connected to MySQL")
                 return connection
 
         elif Config.DBMS == "postgres" or Config.DBMS == "postgresql":
