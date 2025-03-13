@@ -12,6 +12,11 @@ from typing import List
 def get_table_names(schema_name: str) -> List[str]:
     """
     Fetches the names of all tables within a given database schema.
+
+     Args:
+        schema_name (str): The name of the database schema.
+    Returns:
+        list: A list of table names in the schema.
     """
     conn = get_db_connection()
     if conn is None:
@@ -62,6 +67,7 @@ def generate_data_dictionary_file(schema_name: str, table_names: List[str]) -> N
         with pd.ExcelWriter(output_file, engine="xlsxwriter") as writer:
             for table in table_names:
                 logger.info(f"Processing table: {table}...")
+                # Generate data dictionary using the LLM
                 result = generate_data_dictionary(table)
                 logger.info(f"Raw LLM response for table '{table}': {result}")
 
@@ -69,7 +75,8 @@ def generate_data_dictionary_file(schema_name: str, table_names: List[str]) -> N
                     logger.warning(f"No valid data dictionary found for table: {table}")
                     continue
 
-                if isinstance(result, str):  
+                if isinstance(result, str):
+                    # Remove unwanted formatting like markdown json blocks
                     cleaned_result = re.sub(r'```json|```|"Raw Result: ', '', result).strip()
                     structured_data = json.loads(cleaned_result)
                 elif isinstance(result, dict):  
@@ -89,7 +96,7 @@ def generate_data_dictionary_file(schema_name: str, table_names: List[str]) -> N
                 if df.empty:
                     logger.warning(f"Skipping empty table: {table}")
                     continue
-
+                # Rename columns for better readability
                 df.rename(columns={
                     "column_name": "Field Name",
                     "datatype": "Data Type",
@@ -101,8 +108,9 @@ def generate_data_dictionary_file(schema_name: str, table_names: List[str]) -> N
                     "description": "Description",
                     "constraints": "Valid Values/Constraints"
                 }, inplace=True)
-
+                # Drop 'table_name' column if it exists
                 df.drop(columns=["table_name"], inplace=True, errors='ignore')
+                # Fill empty constraint values
                 df["Valid Values/Constraints"] = df["Valid Values/Constraints"].fillna("")
 
                 # Define expected columns
@@ -119,8 +127,13 @@ def generate_data_dictionary_file(schema_name: str, table_names: List[str]) -> N
 
                 df = df[expected_columns]
 
+                # Truncate sheet name to 31 characters
                 sheet_name = table[:31]
+
+                # Write DataFrame to Excel sheet
                 df.to_excel(writer, sheet_name=sheet_name, startrow=2, index=False)
+
+                # Get worksheet reference and add table metadata
                 worksheet = writer.sheets[sheet_name]
                 table_description = tables_data[0].get('table_description', '')
                 worksheet.write(0, 0, f"Table Name: {table}")
