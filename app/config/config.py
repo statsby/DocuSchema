@@ -30,7 +30,7 @@ class Config:
     DOMAIN_NAME=os.getenv("DOMAIN_NAME","Clinical Trials")
 
     # Data Dictionary Configuration for extra columns
-    ADD_EXTRA_COLUMNS = os.getenv("ADD_EXTRA_COLUMNS")
+    ADD_EXTRA_COLUMNS = os.getenv("ADD_EXTRA_COLUMNS", "False").lower() == "true"
     
     # Read dynamic extra columns
     EXTRA_COLUMNS = {}
