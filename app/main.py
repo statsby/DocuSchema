@@ -13,7 +13,7 @@ def get_table_names(schema_name: str) -> List[str]:
     """
     Fetches the names of all tables within a given database schema.
 
-     Args:
+    Args:
         schema_name (str): The name of the database schema.
     Returns:
         list: A list of table names in the schema.
@@ -25,6 +25,7 @@ def get_table_names(schema_name: str) -> List[str]:
 
     try:
         with conn.cursor() as cursor:
+            # Query to fetch all base tables in the given schema
             cursor.execute("""
                 SELECT schema_name
                 FROM information_schema.schemata
@@ -35,6 +36,7 @@ def get_table_names(schema_name: str) -> List[str]:
                 logger.warning(f"Schema '{schema_name}' does not exist in the database.")
                 return []
 
+            # Fetch table names from the specified schema
             cursor.execute("""
                 SELECT table_name
                 FROM information_schema.tables
