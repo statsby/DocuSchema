@@ -2,12 +2,12 @@ import json
 import os
 import pandas as pd
 import re
-from config.db_config import get_db_connection
-from config.config import Config
+from app.config.db_config import get_db_connection
+from app.config.config import Config
 from app.src.generate_data_dictionary import generate_data_dictionary
-from common_utils.loggers import logger
-from config.db_config import get_db_connection
+from app.common_utils.loggers import logger
 from typing import List
+
 
 def get_table_names(schema_name: str) -> List[str]:
     """
@@ -15,7 +15,6 @@ def get_table_names(schema_name: str) -> List[str]:
 
     Args:
         schema_name (str): The name of the database schema.
-
     Returns:
         list: A list of table names in the schema.
     """
@@ -32,19 +31,19 @@ def get_table_names(schema_name: str) -> List[str]:
                 FROM information_schema.schemata
                 WHERE schema_name = %s;
             """, (schema_name,))
-            
+
             if not cursor.fetchone():
                 logger.warning(f"Schema '{schema_name}' does not exist in the database.")
                 return []
-            
-            # Fetch table names
+
+            # Fetch table names from the specified schema
             cursor.execute("""
                 SELECT table_name
                 FROM information_schema.tables
                 WHERE table_schema = %s
                 AND table_type = 'BASE TABLE';
             """, (schema_name,))
-            
+
             table_names = [row[0] for row in cursor.fetchall()]
             logger.info(f"Table names fetched: {table_names}")
             return table_names
@@ -52,7 +51,7 @@ def get_table_names(schema_name: str) -> List[str]:
     except Exception as err:
         logger.exception(f"Error fetching table names: {err}")
         return []
-    
+
     finally:
         if conn:
             conn.close()
@@ -70,67 +69,77 @@ def generate_data_dictionary_file(schema_name: str, table_names: List[str]) -> N
         with pd.ExcelWriter(output_file, engine="xlsxwriter") as writer:
             for table in table_names:
                 logger.info(f"Processing table: {table}...")
-
                 # Generate data dictionary using the LLM
                 result = generate_data_dictionary(table)
+                logger.info(f"Raw LLM response for table '{table}': {result}")
 
-                if result:
+                if not result:
+                    logger.warning(f"No valid data dictionary found for table: {table}")
+                    continue
+
+                if isinstance(result, str):
                     # Remove unwanted formatting like markdown json blocks
                     cleaned_result = re.sub(r'```json|```|"Raw Result: ', '', result).strip()
-
-                    if not cleaned_result:
-                        logger.warning(f"No valid data dictionary found for table: {table}")
-                        continue
-
                     structured_data = json.loads(cleaned_result)
-                    df = pd.DataFrame(structured_data.get('columns', []))
+                elif isinstance(result, dict):  
+                    structured_data = result
+                else:  
+                    logger.error(f"Unexpected response type: {type(result)}")  
+                    continue  
 
-                    if df.empty:
-                        logger.warning(f"Skipping empty table: {table}")
-                        continue
+                tables_data = structured_data.get('text', {}).get('tables', [])
+                if not tables_data:
+                    logger.warning(f"No valid table metadata found in LLM response for table {table}")
+                    continue  
 
-                    # Rename columns for better readability
-                    df.rename(columns={
-                        "column_name": "Field Name",
-                        "datatype": "Data Type",
-                        "length": "Length",
-                        "is_null": "Allow Null?",
-                        "foreign_key": "Foreign Key?",
-                        "primary_key": "Primary Key?",
-                        "default": "Default",
-                        "description": "Description",
-                        "constraints": "Valid Values/Constraints"
-                    }, inplace=True)
+                df = pd.json_normalize(tables_data, "columns", ["table_name", "table_description"])
+                logger.info(f"Data Frames for table '{table}': {df}")
 
-                    # Drop 'table_name' column if it exists
-                    df.drop(columns=["table_name"], inplace=True, errors='ignore')
+                if df.empty:
+                    logger.warning(f"Skipping empty table: {table}")
+                    continue
+                # Rename columns for better readability
+                df.rename(columns={
+                    "column_name": "Field Name",
+                    "datatype": "Data Type",
+                    "length": "Length",
+                    "is_null": "Allow Null?",
+                    "foreign_key": "Foreign Key?",
+                    "primary_key": "Primary Key?",
+                    "default": "Default",
+                    "description": "Description",
+                    "constraints": "Valid Values/Constraints"
+                }, inplace=True)
+                # Drop 'table_name' column if it exists
+                df.drop(columns=["table_name"], inplace=True, errors='ignore')
+                # Fill empty constraint values
+                df["Valid Values/Constraints"] = df["Valid Values/Constraints"].fillna("")
 
-                    # Fill empty constraint values
-                    df["Valid Values/Constraints"] = df["Valid Values/Constraints"].fillna("")
+                # Define expected columns
+                expected_columns = [
+                    "Field Name", "Data Type", "Length", "Allow Null?", "Foreign Key?",
+                    "Primary Key?", "Default", "Description", "Valid Values/Constraints"
+                ]
 
-                    # Add extra metadata columns
-                    df["Update Frequency"] = "Daily"
-                    df["Owner"] = "Data Governance"
+                # Add extra columns dynamically
+                if Config.ADD_EXTRA_COLUMNS and Config.EXTRA_COLUMNS:
+                    for col_name, col_value in Config.EXTRA_COLUMNS.items():
+                        df[col_name] = col_value
+                    expected_columns.extend(Config.EXTRA_COLUMNS.keys())
 
-                    # Define expected column order
-                    expected_columns = [
-                        "Field Name", "Data Type", "Length", "Allow Null?", "Foreign Key?", 
-                        "Primary Key?", "Default", "Description", "Valid Values/Constraints", 
-                        "Update Frequency", "Owner"
-                    ]
-                    df = df[expected_columns]
+                df = df[expected_columns]
 
-                    # Truncate sheet name to 31 characters (Excel limit)
-                    sheet_name = table[:31]
+                # Truncate sheet name to 31 characters
+                sheet_name = table[:31]
 
-                    # Write DataFrame to Excel sheet
-                    df.to_excel(writer, sheet_name=sheet_name, startrow=2, index=False)
+                # Write DataFrame to Excel sheet
+                df.to_excel(writer, sheet_name=sheet_name, startrow=2, index=False)
 
-                    # Get worksheet reference and add table metadata
-                    worksheet = writer.sheets[sheet_name]
-                    worksheet.write(0, 0, f"Table Name: {table}")
-                    table_description = structured_data.get('table_description', '')
-                    worksheet.write(1, 0, f"Description: {table_description}")
+                # Get worksheet reference and add table metadata
+                worksheet = writer.sheets[sheet_name]
+                table_description = tables_data[0].get('table_description', '')
+                worksheet.write(0, 0, f"Table Name: {table}")
+                worksheet.write(1, 0, f"Description: {table_description}")
 
         logger.info(f"Data dictionary saved to {output_file}")
 
@@ -141,7 +150,6 @@ def generate_data_dictionary_file(schema_name: str, table_names: List[str]) -> N
 if __name__ == "__main__":
     try:
         logger.info("Starting data dictionary generation process.")
-        
         schema_name = Config.SCHEMA_NAME
         table_names = get_table_names(schema_name)
 

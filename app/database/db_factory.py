@@ -1,7 +1,7 @@
 import os
-from database.postgres import PostgresDB
-from database.mysql import MySQLDB
-from config.config import Config
+from app.database.postgres import PostgresDB
+from app.database.mysql import MySQLDB
+from app.config.config import Config
 
 def get_db_instance():
     """Returns an instance of the appropriate database class based on the DBMS."""

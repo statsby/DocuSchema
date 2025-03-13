@@ -2,8 +2,8 @@ import os
 from dotenv import load_dotenv
 import psycopg2
 import mysql.connector
-from common_utils.loggers import logger
-from config.config import Config
+from app.common_utils.loggers import logger
+from app.config.config import Config
 load_dotenv()
 
 def get_db_connection():
