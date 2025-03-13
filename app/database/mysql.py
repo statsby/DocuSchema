@@ -1,6 +1,5 @@
-from config.db_config import get_db_connection
+from app.database.base_db import BaseDB
 from common_utils.loggers import logger
-from database.base_db import BaseDB
 from typing import List, Tuple, Any
 
 class MySQLDB(BaseDB):

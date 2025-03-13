@@ -1,5 +1,5 @@
-from database.db_factory import get_db_instance
-from common_utils.loggers import logger
+from app.database.db_factory import get_db_instance
+from app.common_utils.loggers import logger
 from collections import defaultdict
 
 def extract_table_metadata(conn, schema_name: str) -> dict:
