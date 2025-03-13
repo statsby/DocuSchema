@@ -9,7 +9,7 @@ class MySQLDB(BaseDB):
     def fetch_metadata(self,conn, schema_name: str) -> List[Tuple[Any, ...]]:
         """Fetch metadata for all tables in the given schema."""
         try:
-            with conn.cursor() as cursor:  # Ensures cursor closes properly
+            with conn.cursor() as cursor:
                 query = """
                 SELECT 
                     c.TABLE_NAME AS table_name,  
@@ -42,7 +42,7 @@ class MySQLDB(BaseDB):
                 cursor.execute(query, (schema_name,))
                 rows = cursor.fetchall()
 
-            return rows  # Ensures results are returned even if conn closes in `finally`
+            return rows
 
         except Exception as err:
             logger.error(f"Error fetching metadata for schema {schema_name}: {err}", exc_info=True)
@@ -50,4 +50,4 @@ class MySQLDB(BaseDB):
 
         finally:
             if conn:
-                conn.close()  # Ensures connection is always closed
+                conn.close()

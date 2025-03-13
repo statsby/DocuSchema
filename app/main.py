@@ -15,7 +15,7 @@ def generate_data_dictionary_file(conn, schema_name: str) -> None:
         os.makedirs(output_dir, exist_ok=True)
         output_file = os.path.join(output_dir, f"{schema_name}_data_dictionary_({Config.DBMS}).xlsx")
 
-        # ✅ Pass the connection instead of opening a new one
+        # Pass the connection instead of opening a new one
         metadata_by_table = extract_table_metadata(conn, schema_name)
 
         with pd.ExcelWriter(output_file, engine="xlsxwriter") as writer:
@@ -23,7 +23,7 @@ def generate_data_dictionary_file(conn, schema_name: str) -> None:
                 try:
                     logger.info(f"Processing table: {table_name}...")
 
-                    # ✅ Generate dictionary using LLM
+                    # Generate dictionary using LLM
                     result = generate_data_dictionary(table_name, metadata)
 
                     if not result:
@@ -62,7 +62,7 @@ if __name__ == "__main__":
             logger.error("Failed to establish database connection. Exiting.")
         else:
             generate_data_dictionary_file(conn, Config.SCHEMA_NAME)
-            conn.close()  # Close after everything
+            conn.close()
 
     except Exception as e:
         logger.exception(f"Unexpected error: {e}")

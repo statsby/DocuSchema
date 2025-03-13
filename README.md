@@ -10,7 +10,7 @@ This project automates the generation of a data dictionary for a specified datab
 - Outputs a well-structured Excel file containing the data dictionary.
 - Logs all processes for traceability.
 
-## ⚠️ **Data Privacy Notice**
+## **Data Privacy Notice**
 
 This tool uses AI services (such as OpenAI API) to generate meaningful column descriptions based on database metadata.  
 
@@ -113,15 +113,21 @@ An Excel file named `<SCHEMA_NAME>_data_dictionary_(DBMS).xlsx` will be created 
 │   │   ├── db_config.py    # Database connection setup
 │   ├── common_utils/
 │   │   ├── loggers.py      # Logging configuration
+│   ├── database/
+│   │   ├── base_db.py      # Abstract base class for databases
+│   │   ├── mysql.py        # MySQL database handler
+│   │   ├── postgres.py     # PostgreSQL database handler
+│   │   ├── db_factory.py   # Factory pattern for database instances
 │   ├── src/
 │   │   ├── metadata_extractor.py  # Fetches table metadata
-│   │   ├── generate_data_dictionary.py     # Generates data dictionary with OpenAI API
+│   │   ├── generate_data_dictionary.py  # Generates data dictionary with OpenAI API
 │   ├── main.py             # Main script to generate the data dictionary
 │
 ├── docker-compose.yml      # Docker Compose configuration for databases
 ├── .env                    # Environment configuration file
 ├── pyproject.toml          # List of required dependencies
 ├── README.md               # Project documentation
+
 ```
 
 ## Logging

@@ -8,7 +8,7 @@ class PostgresDB(BaseDB):
     
     def fetch_metadata(self,conn, schema_name: str) -> List[Tuple[Any, ...]]:
         try:
-            with conn.cursor() as cursor:  # Using `with` ensures the cursor closes properly
+            with conn.cursor() as cursor:
                 query = """
                 SELECT 
                     c.table_name,  
@@ -45,12 +45,12 @@ class PostgresDB(BaseDB):
                 ORDER BY c.ordinal_position;
                 """
 
-                # ✅ Corrected: Ensure schema_name is passed as a tuple
+                # Corrected: Ensure schema_name is passed as a tuple
                 cursor.execute(query, (schema_name,))  
 
                 rows = cursor.fetchall()
 
-            return rows  # Ensures results are returned even if conn closes in `finally`
+            return rows
 
         except Exception as err:
             logger.error(f"Error fetching metadata for {schema_name}: {err}", exc_info=True)
@@ -58,4 +58,4 @@ class PostgresDB(BaseDB):
 
         finally:
             if conn:
-                conn.close()  # Ensures connection is always closed, even if an error occurs
+                conn.close()

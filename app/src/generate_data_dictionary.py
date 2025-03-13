@@ -2,23 +2,22 @@ import json
 import os
 from langchain.schema.runnable import RunnableLambda
 from langchain.prompts import PromptTemplate
-from src.metadata_extractor import extract_table_metadata
 from config.config import Config
 from common_utils.llm_selector import LLMSelector
 from common_utils.loggers import logger
 
-import json
-import os
-from langchain.schema.runnable import RunnableLambda
-from langchain.prompts import PromptTemplate
-from src.metadata_extractor import extract_table_metadata
-from config.config import Config
-from common_utils.llm_selector import LLMSelector
-from common_utils.loggers import logger
 
-def generate_column_description(metadata, table_name, model_name=None):
+def generate_column_description(metadata, table_name):
     """
-    Generates a meaningful column-level description for each column in the table metadata.
+    Generates a meaningful column-level description for each column in the table metadata and also generates a table level description.
+
+    Args:
+        metadata (dict): The metadata of the table, including column names, data types, constraints, etc.
+        model_name (str, optional): The name of the LLM model to be used for description generation.
+
+    Returns:
+        str: A JSON-formatted string containing the updated table metadata with meaningful descriptions.
+        None: If an error occurs during processing.
     """
     metadata_str = str(metadata)
     domain_name = Config.DOMAIN_NAME
@@ -64,17 +63,17 @@ def generate_column_description(metadata, table_name, model_name=None):
 
         logger.info(f"Using LLM Model: {llm.__class__.__name__}")
 
-        # ✅ Use new LangChain syntax (`RunnableLambda`)
+        # Use new LangChain syntax (`RunnableLambda`)
         chain = column_description_prompt | llm | RunnableLambda(lambda x: x.content if hasattr(x, "content") else str(x))
 
-        # ✅ Fix: Ensure correct input keys are passed
+        # Fix: Ensure correct input keys are passed
         response = chain.invoke({
             "metadata_str": metadata_str,
             "domain_name": domain_name,
             "table_name": table_name
         })
 
-        if hasattr(response, "content"):  # ✅ Extract content safely
+        if hasattr(response, "content"):
             response = response.content
 
         return response.strip()
@@ -94,23 +93,23 @@ def generate_data_dictionary(table_name, metadata, model_name=None):
 
     logger.info(f"Generating data dictionary for table: {table_name}")
 
-    llm_output = generate_column_description(metadata, table_name, model_name)
+    llm_output = generate_column_description(metadata, table_name)
 
     if not llm_output or not llm_output.strip():
         logger.error(f"LLM output is empty for table: {table_name}")
         return None
 
-    # ✅ Clean LLM output and validate JSON
+    # Clean LLM output and validate JSON
     cleaned_output = llm_output.strip().strip("```json").strip("```")
 
     try:
         structured_data = json.loads(cleaned_output)
 
-        # ✅ Fix: If the response is a list, wrap it in a dictionary
+        # Fix: If the response is a list, wrap it in a dictionary
         if isinstance(structured_data, list):
             structured_data = {"table_name": table_name, "columns": structured_data}
 
-        return json.dumps(structured_data)  # Return as JSON string
+        return json.dumps(structured_data)
 
     except json.JSONDecodeError:
         logger.error(f"LLM output is not valid JSON for {table_name}: {cleaned_output}")
