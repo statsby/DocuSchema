@@ -1,6 +1,5 @@
 import os
 import json
-from dotenv import load_dotenv
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
@@ -9,19 +8,17 @@ from app.config.config import Config
 from app.common_utils.llm_selector import LLMSelector
 from app.common_utils.loggers import logger
 
-# Load environment variables
-load_dotenv()
-
-schema_name = Config.SCHEMA_NAME
-domain_name = Config.DOMAIN_NAME
+# Load configuration values
+SCHEMA_NAME = Config.SCHEMA_NAME
+DOMAIN_NAME = Config.DOMAIN_NAME
 
 # Initialize LLM model
 llm_selector = LLMSelector()
 llm = llm_selector.get_llm_model()
 logger.info(f"Using LLM Model: {llm.__class__.__name__}")
 
-# Prompt template
-column_description_prompt = PromptTemplate(
+# Define the prompt template for column descriptions
+COLUMN_DESCRIPTION_PROMPT = PromptTemplate(
     input_variables=["metadata_json", "domain_name"],
     template="""
     You are an expert database documenter. This metadata belongs to {domain_name}.
@@ -49,8 +46,9 @@ column_description_prompt = PromptTemplate(
     """
 )
 
-# Define the JSON parser
+# Define the JSON parser for structured output
 json_parser = JsonOutputParser()
+
 
 def generate_column_description(metadata):
     """
@@ -60,21 +58,18 @@ def generate_column_description(metadata):
         metadata (dict): Table metadata containing column names, data types, and constraints.
 
     Returns:
-        dict: JSON object with updated column descriptions.
+        dict | None: JSON object with updated column descriptions or None in case of failure.
     """
     try:
         metadata_json = json.dumps(metadata, indent=2)
 
         # Initialize LLM chain with prompt, model, and JSON parser
-        llm_chain = LLMChain(llm=llm, prompt=column_description_prompt, output_parser=json_parser)
+        llm_chain = LLMChain(llm=llm, prompt=COLUMN_DESCRIPTION_PROMPT, output_parser=json_parser)
 
-        # Use `.invoke()` instead of `.run()` to avoid deprecation warnings
-        response = llm_chain.invoke({"metadata_json": metadata_json, "domain_name": domain_name})
-        logger.info(f"Raw LLM response from LLM'{response}")
+        response = llm_chain.invoke({"metadata_json": metadata_json, "domain_name": DOMAIN_NAME})
+        logger.info(f"Raw LLM response: {response}")
 
-
-        # JsonOutputParser already returns a dictionary, so no need to call json.loads(response)
-        return response  
+        return response
 
     except json.JSONDecodeError as e:
         logger.error(f"Invalid JSON response from LLM: {e}")
@@ -82,6 +77,7 @@ def generate_column_description(metadata):
     except Exception as e:
         logger.error(f"Error generating column description: {e}")
         raise e
+
 
 def generate_data_dictionary(table_name):
     """
@@ -92,9 +88,9 @@ def generate_data_dictionary(table_name):
         table_name (str): Name of the table to process.
 
     Returns:
-        dict: JSON-formatted metadata with updated descriptions.
+        dict | None: JSON-formatted metadata with updated descriptions or None if unsuccessful.
     """
-    metadata = extract_table_metadata(schema_name, table_name)
+    metadata = extract_table_metadata(SCHEMA_NAME, table_name)
 
     if not metadata:
         logger.warning(f"No metadata found for table: {table_name}")
