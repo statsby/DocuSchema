@@ -18,8 +18,9 @@ logger.info(f"Using LLM Model: {llm.__class__.__name__}")
 
 # Define the prompt template for column descriptions
 COLUMN_DESCRIPTION_PROMPT = PromptTemplate(
-    input_variables=["metadata_json", "domain_name"],
+    input_variables=["metadata_list", "domain_name"],
     template="""
+    {metadata_list}
     You are an expert database documenter. This metadata belongs to {domain_name}.
     First value is table_name, column name, datatype, length, is null, default,
     primary key, foreign key, constraints, description.
@@ -31,7 +32,7 @@ COLUMN_DESCRIPTION_PROMPT = PromptTemplate(
     - **Do not add anything related to {domain_name} in column or table descriptions.**
     - **Strictly return JSON format with no extra text, markdown, or formatting artifacts.**
     - Ensure the output maintains this exact sequence:
-    `table_name, column name, datatype, length, is_null, default, primary_key, foreign_key, constraints, description.`
+    `column name, datatype, length, is_null, default, primary_key, foreign_key, constraints, description.`
 
     Also, generate a **table-level description**.
 
@@ -60,12 +61,10 @@ def generate_column_description(metadata):
         dict | None: JSON object with updated column descriptions or None in case of failure.
     """
     try:
-        metadata_json = json.dumps(metadata, indent=2)
-
         # Initialize LLM chain with prompt, model, and JSON parser
         llm_chain = LLMChain(llm=llm, prompt=COLUMN_DESCRIPTION_PROMPT, output_parser=json_parser)
 
-        response = llm_chain.invoke({"metadata_json": metadata_json, "domain_name": DOMAIN_NAME})
+        response = llm_chain.invoke({"metadata_list": metadata, "domain_name": DOMAIN_NAME})
 
         return response
 

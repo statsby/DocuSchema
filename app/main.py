@@ -38,7 +38,7 @@ def generate_data_dictionary_file(conn, schema_name: str) -> None:
                         logger.error(f"Unexpected response type: {type(result)}")  
                         continue  
 
-                    tables_data = structured_data.get('text', {}).get('tables', [])
+                    tables_data = structured_data.get('text', {})
 
                     if not tables_data:
                         logger.warning(f"No valid table metadata found in LLM response for table {table}")
@@ -88,7 +88,7 @@ def generate_data_dictionary_file(conn, schema_name: str) -> None:
 
                     # Get worksheet reference and add table metadata
                     worksheet = writer.sheets[sheet_name]
-                    table_description = tables_data[0].get('table_description', '')
+                    table_description = tables_data.get('table_description', '')
                     worksheet.write(0, 0, f"Table Name: {table}")
                     worksheet.write(1, 0, f"Description: {table_description}")
                 except Exception as table_err:
