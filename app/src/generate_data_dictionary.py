@@ -18,8 +18,9 @@ logger.info(f"Using LLM Model: {llm.__class__.__name__}")
 
 # Define the prompt template for column descriptions
 COLUMN_DESCRIPTION_PROMPT = PromptTemplate(
-    input_variables=["metadata_json", "domain_name"],
+    input_variables=["metadata_list", "domain_name"],
     template="""
+    {metadata_list}
     You are an expert database documenter. This metadata belongs to {domain_name}.
     First value is table_name, column name, datatype, length, is null, default,
     primary key, foreign key, constraints, description.
@@ -31,7 +32,7 @@ COLUMN_DESCRIPTION_PROMPT = PromptTemplate(
     - **Do not add anything related to {domain_name} in column or table descriptions.**
     - **Strictly return JSON format with no extra text, markdown, or formatting artifacts.**
     - Ensure the output maintains this exact sequence:
-    `table_name, column name, datatype, length, is_null, default, primary_key, foreign_key, constraints, description.`
+    `column name, datatype, length, is_null, default, primary_key, foreign_key, constraints, description.`
 
     Also, generate a **table-level description**.
 
@@ -49,23 +50,22 @@ COLUMN_DESCRIPTION_PROMPT = PromptTemplate(
 json_parser = JsonOutputParser()
 
 
-def generate_column_description(metadata):
+def generate_column_description(metadata: list) -> dict | None:
     """
     Generates meaningful column descriptions based on structured metadata.
 
     Args:
-        metadata (dict): Table metadata containing column names, data types, and constraints.
+        metadata (list): A list of dictionaries where each dictionary represents column metadata
+                        with keys such as 'column_name', 'datatype', 'length', 'is_null', etc.
 
     Returns:
-        dict | None: JSON object with updated column descriptions or None in case of failure.
+        dict | None: A JSON object containing updated column descriptions, or None in case of failure.
     """
     try:
-        metadata_json = json.dumps(metadata, indent=2)
-
         # Initialize LLM chain with prompt, model, and JSON parser
         llm_chain = LLMChain(llm=llm, prompt=COLUMN_DESCRIPTION_PROMPT, output_parser=json_parser)
 
-        response = llm_chain.invoke({"metadata_json": metadata_json, "domain_name": DOMAIN_NAME})
+        response = llm_chain.invoke({"metadata_list": metadata, "domain_name": DOMAIN_NAME})
 
         return response
 
@@ -77,16 +77,17 @@ def generate_column_description(metadata):
         raise e
 
 
-def generate_data_dictionary(table_name, metadata):
+def generate_data_dictionary(table_name: str, metadata: list) -> dict | None:
     """
-    Generates a data dictionary for a given table by fetching metadata and 
-    adding meaningful descriptions.
+    Generates a data dictionary for a given table by processing its metadata
+    and adding meaningful descriptions.
 
     Args:
         table_name (str): Name of the table to process.
+        metadata (list): A list of dictionaries containing column metadata.
 
     Returns:
-        dict | None: JSON-formatted metadata with updated descriptions or None if unsuccessful.
+        dict | None: A JSON-formatted metadata dictionary with updated descriptions,or None if the generation fails.
     """
     if not metadata:
         logger.warning(f"No metadata found for table: {table_name}")

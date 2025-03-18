@@ -105,6 +105,11 @@ python main.py
 ### Expected Output
 An Excel file named `<SCHEMA_NAME>_data_dictionary_(DBMS).xlsx` will be created in the `output/` directory.
 
+## Sample Output
+Here’s an example of the generated data dictionary:
+
+![Sample output](https://i.imgur.com/X2QcEiX.png)
+
 ## Code Structure
 ```
 ├── app/
