@@ -50,15 +50,16 @@ COLUMN_DESCRIPTION_PROMPT = PromptTemplate(
 json_parser = JsonOutputParser()
 
 
-def generate_column_description(metadata):
+def generate_column_description(metadata: list) -> dict | None:
     """
     Generates meaningful column descriptions based on structured metadata.
 
     Args:
-        metadata (dict): Table metadata containing column names, data types, and constraints.
+        metadata (list): A list of dictionaries where each dictionary represents column metadata
+                        with keys such as 'column_name', 'datatype', 'length', 'is_null', etc.
 
     Returns:
-        dict | None: JSON object with updated column descriptions or None in case of failure.
+        dict | None: A JSON object containing updated column descriptions, or None in case of failure.
     """
     try:
         # Initialize LLM chain with prompt, model, and JSON parser
@@ -76,16 +77,17 @@ def generate_column_description(metadata):
         raise e
 
 
-def generate_data_dictionary(table_name, metadata):
+def generate_data_dictionary(table_name: str, metadata: list) -> dict | None:
     """
-    Generates a data dictionary for a given table by fetching metadata and 
-    adding meaningful descriptions.
+    Generates a data dictionary for a given table by processing its metadata
+    and adding meaningful descriptions.
 
     Args:
         table_name (str): Name of the table to process.
+        metadata (list): A list of dictionaries containing column metadata.
 
     Returns:
-        dict | None: JSON-formatted metadata with updated descriptions or None if unsuccessful.
+        dict | None: A JSON-formatted metadata dictionary with updated descriptions,or None if the generation fails.
     """
     if not metadata:
         logger.warning(f"No metadata found for table: {table_name}")
