@@ -125,7 +125,7 @@ If you want to extend support to a new database (e.g., Oracle, SQL Server):
 
 ## Adding Support for a New LLM
 
-We currently support several LLM providers. OpenAI has been tested extensively; however, we have added a few more LLMs that haven’t been fully tested due to missing API keys. If you have access to the API keys for providers such as Ollama, Hugging Face, or Cohere, please help us test and enhance their integration.
+We currently support several LLM providers. OpenAI has been tested extensively; however, we have added a few more LLMs that haven’t been fully tested due to missing API keys. If you have access to the API keys for providers such as Hugging Face or Cohere, please help us test and enhance their integration.
 
 1. **Implement the Integration:**  
    - Update `app/common_utils/llm_selector.py` to add helper methods for the new LLM.
@@ -165,6 +165,9 @@ We currently support several LLM providers. OpenAI has been tested extensively; 
 2. **Testing:**  
    - While we currently lack extensive tests for these additional LLMs, your contributions to add tests (or even manual testing using your API keys) would be extremely valuable.
    - Use monkeypatching to simulate API responses where possible to keep tests fast and reliable.
+Additional Note:
+Contributors can also help test the application by installing Ollama locally and pulling local LLM models such as llama2 or llama3.
+
 
 3. **Documentation:**  
    - Update both this CONTRIBUTING file and the README with any new configuration or usage instructions required for the additional LLM support.
