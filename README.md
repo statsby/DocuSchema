@@ -1,4 +1,4 @@
-# Data Dictionary Generator
+# 📚 Data Dictionary Generator
 
 ## Overview
 This project automates the generation of a data dictionary for a specified database schema. It fetches metadata from the database, enhances it with AI-generated descriptions, and outputs the structured data into an Excel file.
@@ -158,10 +158,3 @@ All logs are stored in `logs/` directory with appropriate error handling.
 3. Commit your changes (`git commit -m "Add new feature"`).
 4. Push to the branch (`git push origin feature-name`).
 5. Open a Pull Request.
-
-<!-- ## License
-This project is licensed under the MIT License.
-
-## Contact
-For any questions or support, contact [your-email@example.com]. -->
-
