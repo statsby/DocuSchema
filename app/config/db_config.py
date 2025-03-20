@@ -4,16 +4,17 @@ import mysql.connector
 from app.common_utils.loggers import logger
 from app.config.config import Config
 
+
 def get_db_connection():
     """Returns a database connection based on the DBMS type (PostgreSQL or MySQL)."""
     try:
         if Config.DBMS == "mysql":
             connection = mysql.connector.connect(
-            host=Config.MYSQL_HOST,
-            user=Config.MYSQL_USER,
-            password=Config.MYSQL_PASSWORD,
-            database=Config.MYSQL_DATABASE,
-        )
+                host=Config.MYSQL_HOST,
+                user=Config.MYSQL_USER,
+                password=Config.MYSQL_PASSWORD,
+                database=Config.MYSQL_DATABASE,
+            )
 
             if connection.is_connected():
                 logger.info("Connected to MySQL")
@@ -31,7 +32,8 @@ def get_db_connection():
             return connection
 
         else:
-            raise ValueError("Unsupported DBMS. Set DBMS to 'mysql' or 'postgres'.")
+            raise ValueError(
+                "Unsupported DBMS. Set DBMS to 'mysql' or 'postgres'.")
 
     except (psycopg2.Error, mysql.connector.Error) as err:
         logger.error(f"Database connection error: {err}")

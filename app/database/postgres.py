@@ -2,10 +2,11 @@ from app.common_utils.loggers import logger
 from app.database.base_db import BaseDB
 from typing import List, Tuple, Any
 
+
 class PostgresDB(BaseDB):
     """Handles PostgreSQL metadata fetching."""
-    
-    def fetch_metadata(self,conn, schema_name: str) -> List[Tuple[Any, ...]]:
+
+    def fetch_metadata(self, conn, schema_name: str) -> List[Tuple[Any, ...]]:
         try:
             with conn.cursor() as cursor:
                 query = """
@@ -45,14 +46,15 @@ class PostgresDB(BaseDB):
                 """
 
                 # Corrected: Ensure schema_name is passed as a tuple
-                cursor.execute(query, (schema_name,))  
+                cursor.execute(query, (schema_name,))
 
                 rows = cursor.fetchall()
 
             return rows
 
         except Exception as err:
-            logger.error(f"Error fetching metadata for {schema_name}: {err}", exc_info=True)
+            logger.error(
+                f"Error fetching metadata for {schema_name}: {err}", exc_info=True)
             return []
 
         finally:

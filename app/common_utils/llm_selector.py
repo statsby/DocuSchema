@@ -39,21 +39,27 @@ class LLMSelector:
             ConfigurationError: If the configuration is missing, incorrectly formatted, or unsupported.
         """
         if not self.model_name:
-            logger.error("LLM model name is missing. Please update your .env file.")
-            raise ConfigurationError("LLM model name is missing. Please update your .env file.")
+            logger.error(
+                "LLM model name is missing. Please update your .env file.")
+            raise ConfigurationError(
+                "LLM model name is missing. Please update your .env file.")
 
         try:
 
             provider, model_id = map(str.strip, self.model_name.split(":", 1))
         except ValueError:
-            logger.error("LLM model name must be in the format 'provider:model'.")
-            raise ConfigurationError("LLM model name must be in the format 'provider:model'.")
+            logger.error(
+                "LLM model name must be in the format 'provider:model'.")
+            raise ConfigurationError(
+                "LLM model name must be in the format 'provider:model'.")
 
         if not model_id:
             logger.error(f"Model name is missing after provider '{provider}'.")
-            raise ConfigurationError(f"Model name is missing after provider '{provider}'.")
+            raise ConfigurationError(
+                f"Model name is missing after provider '{provider}'.")
 
-        logger.info(f"Selecting LLM model: provider '{provider}', model '{model_id}'")
+        logger.info(
+            f"Selecting LLM model: provider '{provider}', model '{model_id}'")
 
         model_initializers = {
             "openai": self._initialize_openai,
@@ -65,7 +71,8 @@ class LLMSelector:
         if provider in model_initializers:
             return model_initializers[provider](model_id)
 
-        logger.error(f"Unsupported LLM model: '{self.model_name}'. Supported models: OpenAI, Ollama, Hugging Face, Cohere.")
+        logger.error(
+            f"Unsupported LLM model: '{self.model_name}'. Supported models: OpenAI, Ollama, Hugging Face, Cohere.")
         raise ConfigurationError(
             f"Unsupported LLM model: '{self.model_name}'. Supported models: OpenAI, Ollama, Hugging Face, Cohere. "
             "Update .env with correct syntax (e.g., 'openai:gpt-4')."

@@ -2,10 +2,11 @@ from app.database.base_db import BaseDB
 from common_utils.loggers import logger
 from typing import List, Tuple, Any
 
+
 class MySQLDB(BaseDB):
     """Handles MySQL metadata fetching."""
-    
-    def fetch_metadata(self,conn, schema_name: str) -> List[Tuple[Any, ...]]:
+
+    def fetch_metadata(self, conn, schema_name: str) -> List[Tuple[Any, ...]]:
         """Fetch metadata for all tables in the given schema."""
         try:
             with conn.cursor() as cursor:
@@ -44,7 +45,8 @@ class MySQLDB(BaseDB):
             return rows
 
         except Exception as err:
-            logger.error(f"Error fetching metadata for schema {schema_name}: {err}", exc_info=True)
+            logger.error(
+                f"Error fetching metadata for schema {schema_name}: {err}", exc_info=True)
             return []
 
         finally:
