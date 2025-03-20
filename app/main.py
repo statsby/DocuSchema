@@ -14,7 +14,8 @@ def generate_data_dictionary_file(conn, schema_name: str) -> None:
     try:
         output_dir = os.path.join(os.getcwd(), "output")
         os.makedirs(output_dir, exist_ok=True)
-        output_file = os.path.join(output_dir, f"{schema_name}_data_dictionary_({Config.DBMS}).xlsx")
+        output_file = os.path.join(
+            output_dir, f"{schema_name}_data_dictionary_({Config.DBMS}).xlsx")
 
         metadata_by_table = extract_table_metadata(conn, schema_name)
 
@@ -26,30 +27,35 @@ def generate_data_dictionary_file(conn, schema_name: str) -> None:
                     result = generate_data_dictionary(table, metadata)
 
                     if not result:
-                        logger.error(f"Skipping {table} due to empty response.")
+                        logger.error(
+                            f"Skipping {table} due to empty response.")
                         continue
 
                     if isinstance(result, str):
-                        cleaned_result = re.sub(r'```json|```|"Raw Result: ', '', result).strip()
+                        cleaned_result = re.sub(
+                            r'```json|```|"Raw Result: ', '', result).strip()
                         structured_data = json.loads(cleaned_result)
-                    elif isinstance(result, dict):  
+                    elif isinstance(result, dict):
                         structured_data = result
-                    else:  
-                        logger.error(f"Unexpected response type: {type(result)}")  
-                        continue  
+                    else:
+                        logger.error(
+                            f"Unexpected response type: {type(result)}")
+                        continue
 
                     tables_data = structured_data.get('text', {})
 
                     if not tables_data:
-                        logger.warning(f"No valid table metadata found in LLM response for table {table}")
-                        continue  
+                        logger.warning(
+                            f"No valid table metadata found in LLM response for table {table}")
+                        continue
 
-                    df = pd.json_normalize(tables_data, "columns", ["table_name", "table_description"])
+                    df = pd.json_normalize(tables_data, "columns", [
+                                           "table_name", "table_description"])
 
                     if df.empty:
                         logger.warning(f"Skipping empty table: {table}")
                         continue
-                    # Rename columns for better readability
+
                     df.rename(columns={
                         "column_name": "Field Name",
                         "datatype": "Data Type",
@@ -61,10 +67,11 @@ def generate_data_dictionary_file(conn, schema_name: str) -> None:
                         "description": "Description",
                         "constraints": "Valid Values/Constraints"
                     }, inplace=True)
-                    # Drop 'table' column if it exists
+
                     df.drop(columns=["table"], inplace=True, errors='ignore')
                     # Fill empty constraint values
-                    df["Valid Values/Constraints"] = df["Valid Values/Constraints"].fillna("")
+                    df["Valid Values/Constraints"] = df["Valid Values/Constraints"].fillna(
+                        "")
 
                     # Define expected columns
                     expected_columns = [
@@ -83,23 +90,23 @@ def generate_data_dictionary_file(conn, schema_name: str) -> None:
                     # Truncate sheet name to 31 characters
                     sheet_name = table[:31]
 
-                    # Write DataFrame to Excel sheet
-                    df.to_excel(writer, sheet_name=sheet_name, startrow=2, index=False)
-
                     # Get worksheet reference and add table metadata
+                    df.to_excel(writer, sheet_name=sheet_name, startrow=2, index=False)
                     worksheet = writer.sheets[sheet_name]
-                    table_description = tables_data.get('table_description', '')
+                    table_description = tables_data.get(
+                        'table_description', '')
                     worksheet.write(0, 0, f"Table Name: {table}")
                     worksheet.write(1, 0, f"Description: {table_description}")
                 except Exception as table_err:
-                        logger.error(f"Error processing table {table}: {table_err}", exc_info=True)
-                        continue
+                    logger.error(
+                        f"Error processing table {table}: {table_err}", exc_info=True)
+                    continue
 
         logger.info(f"Data dictionary saved to {output_file}")
 
     except Exception as err:
-        logger.exception(f"Critical error in generating data dictionary: {err}")
-
+        logger.exception(
+            f"Critical error in generating data dictionary: {err}")
 
 
 if __name__ == "__main__":

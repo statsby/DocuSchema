@@ -65,7 +65,8 @@ def generate_column_description(metadata: list) -> dict | None:
         # Initialize LLM chain with prompt, model, and JSON parser
         llm_chain = LLMChain(llm=llm, prompt=COLUMN_DESCRIPTION_PROMPT, output_parser=json_parser)
 
-        response = llm_chain.invoke({"metadata_list": metadata, "domain_name": DOMAIN_NAME})
+        response = llm_chain.invoke(
+            {"metadata_list": metadata, "domain_name": DOMAIN_NAME})
 
         return response
 
